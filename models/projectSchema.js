@@ -9,7 +9,7 @@ const projectSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
-
+  currentVersion: { type: Number, default: 0 },
   repoUrl: { type: String, required: true },
   framework: String,
   subfolder: String,

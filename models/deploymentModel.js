@@ -1,4 +1,4 @@
-const mongoose = reqiure("mongoose")
+const mongoose = require("mongoose")
 
 const deploymentSchema = new mongoose.Schema({
   projectId: {
