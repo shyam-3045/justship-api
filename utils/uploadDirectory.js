@@ -24,7 +24,6 @@ async function uploadDirectory(localDir, s3Prefix, currentPrefix) {
     const currentKey = `${currentPrefix}/${item}`;
 
     if (stat.isDirectory()) {
-      // 🔥 RECURSION FIX (propagate both paths)
       await uploadDirectory(fullPath, versionKey, currentKey);
     } else {
       const contentType =
@@ -38,7 +37,6 @@ async function uploadDirectory(localDir, s3Prefix, currentPrefix) {
       }
 
       try {
-        // Upload to version folder
         await s3.send(
           new PutObjectCommand({
             Bucket: BUCKET,
@@ -50,7 +48,6 @@ async function uploadDirectory(localDir, s3Prefix, currentPrefix) {
           })
         );
 
-        // Upload to current folder
         await s3.send(
           new PutObjectCommand({
             Bucket: BUCKET,
