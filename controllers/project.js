@@ -1,5 +1,7 @@
 const AppError = require("../errors/AppError");
+const Deployment = require("../models/deploymentModel");
 const Project = require("../models/projectSchema");
+const { switchVersion } = require("../utils/switchVersion");
 
 exports.setVersion = async (req, res, next) => {
   try {
@@ -25,9 +27,36 @@ exports.setVersion = async (req, res, next) => {
         throw new AppError("Invalid Project ",400)
     }
 
-    
+    const deploy = await Deployment.findOne({
+      projectId:projetId,
+      version:version,
+      status:'success'
+    })
+
+    if(!deploy)
+    {
+      throw new AppError("Version not Supported Or Version not Success",400)
+    }
+
+    const projectname = project.name
+    await switchVersion(projectname,version)
+
+    project.currentVersion=version
+    await project.save()
+
+    return res.status(200).json({
+      message: "Version switched successfully",
+      activeVersion: version
+    });
+
 
   } catch (error) {
     next(error);
   }
 };
+
+
+exports.getWebHook=async(req,res)=>
+{
+  
+}

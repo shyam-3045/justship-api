@@ -4,7 +4,7 @@ const { spawn } = require("child_process");
 const AppError = require("../errors/AppError");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-
+const {customAlphabet } = require("nanoid") 
 const path = require("path");
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),
@@ -19,6 +19,8 @@ const connection = {
   host: "127.0.0.1",
   port: 6379,
 };
+
+const nanoidAlpha = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 5);
 
 const runBuild = (job) => {
   return new Promise((resolve, reject) => {
@@ -97,11 +99,14 @@ const runBuild = (job) => {
 
         const s3Prefix = `${projectName}/v${version}`;
 
+        const randomId = nanoidAlpha()
+        const BUILDID = `${job.id.toString()}+${randomId}`
+
         deployment = await Deployment.create({
           projectId,
           userId,
           version,
-          buildId: job.id.toString(),
+          buildId: BUILDID,
           status: "building",
           env : env
         });

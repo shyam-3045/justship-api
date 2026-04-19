@@ -6,7 +6,8 @@ const { addJobToQ } = require("../utils/addJobToQ");
 exports.deployProjectService = async (data) => {
   logger.info("build received!");
 
-  const { url,buildPath,env, projectName,userId,framework } = data;
+  const { url,buildPath,env, projectName,framework } = data;
+  const userId = req.cookies.userId
 
   if (!url) {
     throw new AppError("GitHub url is required", 400);
