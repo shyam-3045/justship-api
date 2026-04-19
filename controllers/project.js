@@ -2,7 +2,8 @@ const AppError = require("../errors/AppError");
 const Deployment = require("../models/deploymentModel");
 const Project = require("../models/projectSchema");
 const { switchVersion } = require("../utils/switchVersion");
-
+const User = require("../models/userSchema")
+const logger = require("../config/logger");
 exports.setVersion = async (req, res, next) => {
   try {
     const { projetId, version, userId } = req.body;
@@ -56,7 +57,35 @@ exports.setVersion = async (req, res, next) => {
 };
 
 
-exports.getWebHook=async(req,res)=>
-{
+// exports.getWebHook=async(req,res)=>
+// {
   
+// }
+
+exports.getMyProjects=async(req,res,next)=>
+{
+  try {
+    const userId = req.cookies.userId
+  if(!userId)
+  {
+    throw new AppError("Unauthorized",401)
+  }
+  const user = await User.findById(userId)
+
+  if(!user)
+  {
+    throw new AppError("User Doesn't Exist",400)
+  }
+
+  const projects = await Project.find({
+    userId : userId
+  })
+  console.log("projects :",projects)
+
+  return res.status(200).json({msg : "Projects fetched successfully" , success : true,projects:projects})
+  } catch (error) {
+    next(error)
+  }
+
+
 }

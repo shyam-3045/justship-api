@@ -61,3 +61,26 @@ exports.reDeployProject=async(req,res,next)=>
   }
 }
 
+exports.getMyDeployments=async(req,res,next)=>
+{
+  try {
+    const userId = "69e3ad542e945401fcd30939"
+    const {projectId}=req.body
+
+    if(!userId)
+    {
+      throw new AppError("Unauthorized",401)
+    }
+    if(!projectId)
+    {
+      throw new AppError("Project Id required ",401)
+    }
+
+    const
+
+
+
+  } catch (error) {
+    next(error)
+  }
+}
