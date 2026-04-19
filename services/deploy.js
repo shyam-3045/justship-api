@@ -42,7 +42,8 @@ exports.deployProjectService = async (data) => {
       userId,
       repoUrl: url,
       subfolder: buildPath || "/",
-      currentVersion: 0
+      currentVersion: 0,
+      framework:framework
     });
   } catch (err) {
     if (err.code === 11000) {

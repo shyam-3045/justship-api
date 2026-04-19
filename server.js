@@ -27,6 +27,7 @@ app.get('/health',(req,res)=>
 app.use('/api/v1',require('./routes/deploy'))
 app.use('/api/v1/auth',require("./routes/auth"))
 app.use("/api/v1",require('./routes/repos'))
+app.use("/api/v1",require("./routes/project"))
 
 app.use(globalErrorHandler)
 

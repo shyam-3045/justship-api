@@ -103,6 +103,7 @@ const runBuild = (job) => {
           version,
           buildId: job.id.toString(),
           status: "building",
+          env : env
         });
 
         logger.info(`Uploading to S3: ${s3Prefix}`);
