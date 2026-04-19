@@ -6,6 +6,6 @@ const router = express.Router()
 router.post('/deploy',deployProject)
 router.post('/redeploy',reDeployProject)
 // get my deployments 
-router.get('getDeployments',getMyDeployments)
+router.get('/getDeployments/:projectId',getMyDeployments)
 
 module.exports = router
