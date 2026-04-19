@@ -3,11 +3,11 @@ const AppError = require("../errors/AppError");
 const Project = require("../models/projectSchema");
 const { addJobToQ } = require("../utils/addJobToQ");
 
-exports.deployProjectService = async (data) => {
+exports.deployProjectService = async (data,userId) => {
   logger.info("build received!");
 
   const { url,buildPath,env, projectName,framework } = data;
-  const userId = req.cookies.userId
+  
 
   if (!url) {
     throw new AppError("GitHub url is required", 400);
@@ -36,6 +36,7 @@ exports.deployProjectService = async (data) => {
   }
 
   let project;
+  const projectUrl = `https://${projectName}.just-ship.app`
 
   try {
     project = await Project.create({
@@ -44,7 +45,8 @@ exports.deployProjectService = async (data) => {
       repoUrl: url,
       subfolder: buildPath || "/",
       currentVersion: 0,
-      framework:framework
+      framework:framework,
+      url:projectUrl
     });
   } catch (err) {
     if (err.code === 11000) {

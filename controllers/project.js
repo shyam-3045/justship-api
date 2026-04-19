@@ -6,8 +6,8 @@ const User = require("../models/userSchema")
 const logger = require("../config/logger");
 exports.setVersion = async (req, res, next) => {
   try {
-    const { projetId, version, userId } = req.body;
-    //const userId = req.cookies.userId
+    const { projetId, version } = req.body;
+    const userId = req.cookies.userId
 
     if(!projetId)
     {

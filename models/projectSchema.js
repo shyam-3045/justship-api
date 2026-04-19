@@ -13,6 +13,7 @@ const projectSchema = new mongoose.Schema({
   repoUrl: { type: String, required: true },
   framework: String,
   subfolder: String,
+  url:String,
 
   createdAt: { type: Date, default: Date.now }
 });

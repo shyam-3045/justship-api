@@ -8,7 +8,8 @@ const User = require("../models/userSchema");
 
 exports.deployProject = async (req, res, next) => {
   try {
-    const jobId = await deployProjectService(req.body);
+    const userId = req.cookies.userId
+    const jobId = await deployProjectService(req.body,userId);
     logger.info("JOB ID:", jobId);
     return res.status(200).send({
       msg: "Job Added to Queue",
@@ -22,8 +23,8 @@ exports.deployProject = async (req, res, next) => {
 exports.reDeployProject = async (req, res, next) => {
   try {
     // implement JWT
-    const { projectId, userId } = req.body;
-    //// const userId = req.cookies.userId
+    const { projectId } = req.body;
+    const userId = req.cookies.userId
     if (!projectId) {
       throw new AppError("Project Id required", 400);
     }
