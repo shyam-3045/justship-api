@@ -196,7 +196,7 @@ const runBuild = (job) => {
             `${projectName}/current`
           );
 
-          deployment.status = "success";
+          deployment.status = "completed";
           deployment.s3Path = s3Prefix;
           deployment.cdnUrl = `https://${projectName}.just-ship.app`;
           deployment.completedAt = new Date();

@@ -13,6 +13,7 @@ const deploymentSchema = new mongoose.Schema(
         "uploading",
         "completed",
         "failed",
+        "success"
       ],
       default: "cloning",
     },

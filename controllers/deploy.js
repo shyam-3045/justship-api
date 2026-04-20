@@ -30,7 +30,7 @@ exports.deployProject = async (req, res, next) => {
 
 exports.reDeployProject = async (req, res, next) => {
   try {
-    // implement JWT
+    
     const { projectId } = req.body;
     const userId = req.cookies.userId;
     if (!projectId) {
@@ -52,10 +52,11 @@ exports.reDeployProject = async (req, res, next) => {
       framework: project.framework,
     };
 
-    const jobId = await addJobToQ(jobData);
-    logger.info("JOB ID:", jobId);
+    await addJobToQ(jobData)
+    const jobId = nanoidAlpha();
+    logger.info(`JOB ID:${jobId}`);
     return res.status(200).send({
-      msg: "Job Added to Queue",
+      msg: "Redeploy Triggered",
       jobID: jobId,
     });
   } catch (error) {
