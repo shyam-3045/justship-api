@@ -1,16 +1,16 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const deploymentSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Project",
-    required: true
+    required: true,
   },
 
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
 
   version: { type: Number, required: true },
@@ -19,8 +19,16 @@ const deploymentSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["queued", "building", "success", "failed"],
-    default: "queued"
+    enum: [
+      "queued",
+      "cloning",
+      "analysing",
+      "building",
+      "uploading",
+      "completed",
+      "failed",
+    ],
+    default: "queued",
   },
 
   s3Path: String,
@@ -29,8 +37,7 @@ const deploymentSchema = new mongoose.Schema({
   env: { type: Object },
 
   createdAt: { type: Date, default: Date.now },
-  completedAt: Date
+  completedAt: Date,
 });
 
-
-module.exports = mongoose.model("Deployment",deploymentSchema)
+module.exports = mongoose.model("Deployment", deploymentSchema);

@@ -3,7 +3,7 @@ const AppError = require("../errors/AppError");
 const Project = require("../models/projectSchema");
 const { addJobToQ } = require("../utils/addJobToQ");
 
-exports.deployProjectService = async (data,userId) => {
+exports.deployProjectService = async (data,userId,jobId) => {
   logger.info("build received!");
 
   const { url,buildPath,env, projectName,framework } = data;
@@ -16,6 +16,10 @@ exports.deployProjectService = async (data,userId) => {
   if(!userId)
   {
     throw new AppError("UserId is required", 400)
+  }
+  if(!jobId)
+  {
+    throw new AppError("jobId is required", 400)
   }
 
   if (!framework) {
@@ -62,11 +66,12 @@ exports.deployProjectService = async (data,userId) => {
     buildPath: buildPath || "/",
     projectName,
     userId,
-    framework
+    framework,
+    jobId
   };
-  logger.info(`jobData from service:${jobData.toString()}`)
+  console.log(`jobData from service:${jobData.toString()}`)
 
-  const jobId = await addJobToQ(jobData);
+  const jobID = await addJobToQ(jobData);
 
-  return jobId;
+  return jobID;
 };

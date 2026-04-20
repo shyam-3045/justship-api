@@ -5,10 +5,24 @@ const globalErrorHandler = require("./middlewares/globalErrorHandler")
 const ConnectDb = require("./config/mongoDbConnection")
 const cookieParser = require("cookie-parser")
 const app = express()
+const http = require("http")
+const {Server}=require('socket.io')
+const initSocket = require("./sockets/socket")
+const initSubscriber = require("./redis/subscriber")
 
 const PORT = 8080
 dotenv.config()
 
+const server = http.createServer(app)
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+initSocket(io);
+initSubscriber(io);
 app.use(cors({
     origin : process.env.ENV == "dev" ? process.env.FRONTEND_URL : process.env.FRONTEND_URL_PROD,
     credentials:true
@@ -31,7 +45,7 @@ app.use("/api/v1",require("./routes/project"))
 
 app.use(globalErrorHandler)
 
-app.listen(PORT,()=>
+server.listen(PORT,()=>
 {
     console.log(`Server is running at Port :${PORT}`)
 })

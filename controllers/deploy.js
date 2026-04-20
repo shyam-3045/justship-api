@@ -5,12 +5,20 @@ const { deployProjectService } = require("../services/deploy");
 const { addJobToQ } = require("../utils/addJobToQ");
 const Deployment = require("../models/deploymentModel");
 const User = require("../models/userSchema");
+const { customAlphabet } = require("nanoid");
+const Log = require("../models/logsSchema");
+
+const nanoidAlpha = customAlphabet(
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  5,
+);
 
 exports.deployProject = async (req, res, next) => {
   try {
-    const userId = req.cookies.userId
-    const jobId = await deployProjectService(req.body,userId);
-    logger.info("JOB ID:", jobId);
+    const userId = req.cookies.userId;
+    const jobId = nanoidAlpha();
+    await deployProjectService(req.body, userId, jobId);
+    console.log("JOB ID:", jobId);
     return res.status(200).send({
       msg: "Job Added to Queue",
       jobID: jobId,
@@ -24,7 +32,7 @@ exports.reDeployProject = async (req, res, next) => {
   try {
     // implement JWT
     const { projectId } = req.body;
-    const userId = req.cookies.userId
+    const userId = req.cookies.userId;
     if (!projectId) {
       throw new AppError("Project Id required", 400);
     }
@@ -57,8 +65,8 @@ exports.reDeployProject = async (req, res, next) => {
 
 exports.getMyDeployments = async (req, res, next) => {
   try {
-    const userId = req.cookies.userId
-    const projectId  = req.params.projectId;
+    const userId = req.cookies.userId;
+    const projectId = req.params.projectId;
 
     if (!userId) {
       throw new AppError("Unauthorized", 401);
@@ -85,15 +93,32 @@ exports.getMyDeployments = async (req, res, next) => {
       status: "success",
     });
 
-    console.log("deployments :",deployments)
+    console.log("deployments :", deployments);
 
-    return res
-      .status(200)
-      .json({
-        msg: "Deployments fetched successfully",
-        success: true,
-        deployments: deployments,
-      });
+    return res.status(200).json({
+      msg: "Deployments fetched successfully",
+      success: true,
+      deployments: deployments,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getLogs = async (req, res, next) => {
+  try {
+    const { jobId } = req.params.jobId;
+
+    const job = await Log.findOne({ jobId });
+    if (!job) {
+      throw new AppError("Deployment Not found", 404);
+    }
+    res.status(200).json({
+      success: true,
+      logs: data.logs,
+      status: data.status,
+      url: data.url,
+    });
   } catch (error) {
     next(error);
   }
