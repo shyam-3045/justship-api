@@ -50,7 +50,9 @@ exports.deployProjectService = async (data,userId,jobId) => {
       subfolder: buildPath || "/",
       currentVersion: 0,
       framework:framework,
-      url:projectUrl
+      url:projectUrl,
+      env:env || {}
+    
     });
   } catch (err) {
     if (err.code === 11000) {

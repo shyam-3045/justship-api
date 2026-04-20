@@ -31,7 +31,7 @@ exports.setVersion = async (req, res, next) => {
     const deploy = await Deployment.findOne({
       projectId:projetId,
       version:version,
-      status:'success'
+      status:'completed'
     })
 
     if(!deploy)

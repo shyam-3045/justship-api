@@ -14,7 +14,7 @@ const projectSchema = new mongoose.Schema({
   framework: String,
   subfolder: String,
   url:String,
-
+  env: { type: Object },
   createdAt: { type: Date, default: Date.now }
 });
 
