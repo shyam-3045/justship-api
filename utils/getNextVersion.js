@@ -7,7 +7,7 @@ exports.getNextVersion= async (projectId)=>  {
     logger.info(`projectId:${projectId}`)
     const project = await Project.findByIdAndUpdate(
       projectId,
-      { $inc: { currentVersion: 1 } },
+      { $inc: { lastVersion: 1 } },
       { new: true }
     );
 
@@ -15,7 +15,7 @@ exports.getNextVersion= async (projectId)=>  {
       throw new AppError("Project not found", 404);
     }
 
-    return project.currentVersion;
+    return project.lastVersion;
 
   } catch (error) {
     console.error("REAL ERROR:", error);

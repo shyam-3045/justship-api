@@ -1,5 +1,4 @@
-const mongoose = require("mongoose")
-
+const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
@@ -7,15 +6,19 @@ const projectSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
-  currentVersion: { type: Number, default: 0 },
+  currentVersion: { type: Number, default: 1 },
+  lastVersion: {
+    type: Number,
+    default: 1,
+  },
   repoUrl: { type: String, required: true },
   framework: String,
   subfolder: String,
-  url:String,
+  url: String,
   env: { type: Object },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Project",projectSchema)
+module.exports = mongoose.model("Project", projectSchema);

@@ -15,7 +15,6 @@ async function switchVersion(projectName, version) {
   const sourcePrefix = `${projectName}/v${version}/`;
   const targetPrefix = `${projectName}/current/`;
 
-  // 🔥 STEP 1: DELETE OLD current/*
   const existing = await s3.send(
     new ListObjectsV2Command({
       Bucket: BUCKET,
@@ -36,7 +35,6 @@ async function switchVersion(projectName, version) {
     );
   }
 
-  // 🔥 STEP 2: LIST ALL FILES FROM vX
   const list = await s3.send(
     new ListObjectsV2Command({
       Bucket: BUCKET,
@@ -48,11 +46,9 @@ async function switchVersion(projectName, version) {
     throw new Error("No files found for this version");
   }
 
-  // 🔥 STEP 3: COPY EACH FILE → current/
   for (const file of list.Contents) {
     const sourceKey = file.Key;
 
-    // skip folder placeholder if exists
     if (sourceKey.endsWith("/")) continue;
 
     const relativePath = sourceKey.replace(sourcePrefix, "");

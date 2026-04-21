@@ -48,7 +48,8 @@ exports.deployProjectService = async (data,userId,jobId) => {
       userId,
       repoUrl: url,
       subfolder: buildPath || "/",
-      currentVersion: 0,
+      currentVersion: 1,
+      lastVersion :1,
       framework:framework,
       url:projectUrl,
       env:env || {}

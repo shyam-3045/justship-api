@@ -30,8 +30,7 @@ exports.deployProject = async (req, res, next) => {
 
 exports.reDeployProject = async (req, res, next) => {
   try {
-    
-    const { projectId ,env } = req.body;
+    const { projectId, env } = req.body;
     const userId = req.cookies.userId;
     const jobId = nanoidAlpha();
     if (!projectId) {
@@ -43,7 +42,6 @@ exports.reDeployProject = async (req, res, next) => {
       throw new AppError("Project Not found", 401);
     }
 
-
     const jobData = {
       projectId: projectId,
       repoUrl: project.repoUrl,
@@ -52,11 +50,11 @@ exports.reDeployProject = async (req, res, next) => {
       projectName: project.name,
       userId: userId,
       framework: project.framework,
-      jobId:jobId
+      jobId: jobId,
     };
 
-    await addJobToQ(jobData)
-   
+    await addJobToQ(jobData);
+
     logger.info(`JOB ID:${jobId}`);
     return res.status(200).send({
       msg: "Redeploy Triggered",
@@ -92,10 +90,15 @@ exports.getMyDeployments = async (req, res, next) => {
       throw new AppError("Project Doesn't Exist", 400);
     }
 
+    const projectDoc = await Project.findById(projectId);
+
     const deployments = await Deployment.find({
       projectId: projectId,
       status: "completed",
+      version: { $ne: projectDoc.currentVersion },
     });
+
+    
 
     console.log("deployments :", deployments);
 
@@ -111,11 +114,15 @@ exports.getMyDeployments = async (req, res, next) => {
 
 exports.getLogs = async (req, res, next) => {
   try {
-    const { jobId } = req.params.jobId;
+    const { jobId } = req.params;
 
     const job = await Log.findOne({ jobId });
     if (!job) {
-      throw new AppError("Deployment Not found", 404);
+      return res.status(200).json({
+        success: true,
+        logs: [],
+        status: "unknown",
+      });
     }
     res.status(200).json({
       success: true,

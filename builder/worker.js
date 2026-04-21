@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const fsPromises = require("fs/promises");
 const Redis = require("ioredis");
+const Project = require("../models/projectSchema");
 
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),
@@ -14,7 +15,7 @@ dotenv.config({
 
 const { uploadDirectory } = require("../utils/uploadDirectory");
 const Deployment = require("../models/deploymentModel");
-const Log = require("../models/logsSchema")
+const Log = require("../models/logsSchema");
 const { getNextVersion } = require("../utils/getNextVersion");
 
 const connection = {
@@ -33,41 +34,50 @@ const runBuild = (job) => {
       userId,
       buildPath = "",
       env = {},
-      jobId, 
+      jobId,
     } = job.data;
 
     logger.info(`jobId: ${jobId}`);
 
     try {
-      
+      // ✅ FIX 1: Create log document properly (CRITICAL)
       await Log.updateOne(
         { jobId },
         { status: "cloning", logs: [] },
-        { upsert: true }
+        { upsert: true },
       );
 
-      pub.publish("deployment_logs", JSON.stringify({
-        jobId,
-        type: "status",
-        status: "cloning"
-      }));
+      pub.publish(
+        "deployment_logs",
+        JSON.stringify({
+          jobId,
+          type: "status",
+          status: "cloning",
+        }),
+      );
 
-    
+      // ---- ANALYSING ----
       await Log.updateOne({ jobId }, { status: "analysing" });
 
-      pub.publish("deployment_logs", JSON.stringify({
-        jobId,
-        type: "status",
-        status: "analysing"
-      }));
+      pub.publish(
+        "deployment_logs",
+        JSON.stringify({
+          jobId,
+          type: "status",
+          status: "analysing",
+        }),
+      );
 
       const dockerPath =
         "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api/output";
 
       const envArgs = [
-        "-e", `REPO_URL=${repoUrl}`,
-        "-e", `PROJECT_NAME=${projectName}`,
-        "-e", `SUBFOLDER=${buildPath}`,
+        "-e",
+        `REPO_URL=${repoUrl}`,
+        "-e",
+        `PROJECT_NAME=${projectName}`,
+        "-e",
+        `SUBFOLDER=${buildPath}`,
       ];
 
       for (const [key, value] of Object.entries(env)) {
@@ -81,6 +91,10 @@ const runBuild = (job) => {
         "--rm",
         "--name",
         `deployx-builder-${job.id}`,
+        "--cpus=1",
+        "--memory=512m",
+        "--pids-limit=100",
+        "--memory-swap=512m",
         ...envArgs,
         "-v",
         `${dockerPath}:/output`,
@@ -93,86 +107,96 @@ const runBuild = (job) => {
 
       const proc = spawn("docker", dockerArgs);
 
-      
+      // ---- BUILDING ----
       await Log.updateOne({ jobId }, { status: "building" });
 
-      pub.publish("deployment_logs", JSON.stringify({
-        jobId,
-        type: "status",
-        status: "building"
-      }));
+      pub.publish(
+        "deployment_logs",
+        JSON.stringify({
+          jobId,
+          type: "status",
+          status: "building",
+        }),
+      );
 
       let buffer = [];
+
       proc.stdout.on("data", async (data) => {
         const log = data.toString();
         logger.info(log);
 
         buffer.push(log);
 
-        await Log.updateOne(
-          { jobId },
-          { $push: { logs: log } }
-        );
+        await Log.updateOne({ jobId }, { $push: { logs: log } });
       });
 
-     
       proc.stderr.on("data", async (data) => {
         const log = data.toString();
         logger.error(log);
 
         buffer.push(log);
 
-        await Log.updateOne(
-          { jobId },
-          { $push: { logs: log } }
-        );
+        await Log.updateOne({ jobId }, { $push: { logs: log } });
       });
 
       const interval = setInterval(() => {
         if (buffer.length === 0) return;
 
-        pub.publish("deployment_logs", JSON.stringify({
-          jobId,
-          logs: buffer,
-        }));
+        pub.publish(
+          "deployment_logs",
+          JSON.stringify({
+            jobId,
+            logs: buffer,
+          }),
+        );
 
         buffer = [];
       }, 200);
 
-      
       proc.on("close", async (code) => {
         clearInterval(interval);
 
         if (buffer.length > 0) {
-          pub.publish("deployment_logs", JSON.stringify({
-            jobId,
-            logs: buffer,
-          }));
+          pub.publish(
+            "deployment_logs",
+            JSON.stringify({
+              jobId,
+              logs: buffer,
+            }),
+          );
         }
 
+        // ---- FAILURE ----
         if (code !== 0) {
           await Log.updateOne({ jobId }, { status: "failed" });
 
-          pub.publish("deployment_logs", JSON.stringify({
-            jobId,
-            type: "failed"
-          }));
+          pub.publish(
+            "deployment_logs",
+            JSON.stringify({
+              jobId,
+              type: "failed",
+            }),
+          );
 
           return reject(new AppError("Build failed"));
         }
 
+        // ---- UPLOADING ----
         await Log.updateOne({ jobId }, { status: "uploading" });
 
-        pub.publish("deployment_logs", JSON.stringify({
-          jobId,
-          type: "status",
-          status: "uploading"
-        }));
+        pub.publish(
+          "deployment_logs",
+          JSON.stringify({
+            jobId,
+            type: "status",
+            status: "uploading",
+          }),
+        );
 
         const localPath = path.join(
           "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api",
           "output",
-          projectName
+          projectName,
         );
 
         const version = await getNextVersion(projectId);
@@ -187,13 +211,13 @@ const runBuild = (job) => {
             version,
             buildId: jobId,
             status: "building",
-            env
+            env,
           });
 
           await uploadDirectory(
             localPath,
             `${projectName}/v${version}`,
-            `${projectName}/current`
+            `${projectName}/current`,
           );
 
           deployment.status = "completed";
@@ -202,28 +226,32 @@ const runBuild = (job) => {
           deployment.completedAt = new Date();
 
           await deployment.save();
+          await Project.findByIdAndUpdate(projectId, {
+            currentVersion: version,
+          });
 
-        
           await Log.updateOne(
             { jobId },
             {
               status: "completed",
-              url: deployment.cdnUrl
-            }
+              url: deployment.cdnUrl,
+            },
           );
 
-          pub.publish("deployment_logs", JSON.stringify({
-            jobId,
-            type: "complete",
-            url: deployment.cdnUrl
-          }));
+          pub.publish(
+            "deployment_logs",
+            JSON.stringify({
+              jobId,
+              type: "complete",
+              url: deployment.cdnUrl,
+            }),
+          );
 
           resolve({
             projectName,
             version,
-            s3Prefix
+            s3Prefix,
           });
-
         } catch (err) {
           if (deployment) {
             deployment.status = "failed";
@@ -233,13 +261,15 @@ const runBuild = (job) => {
 
           await Log.updateOne({ jobId }, { status: "failed" });
 
-          pub.publish("deployment_logs", JSON.stringify({
-            jobId,
-            type: "failed"
-          }));
+          pub.publish(
+            "deployment_logs",
+            JSON.stringify({
+              jobId,
+              type: "failed",
+            }),
+          );
 
           reject(err);
-
         } finally {
           await fsPromises.rm(localPath, {
             recursive: true,
@@ -248,23 +278,34 @@ const runBuild = (job) => {
         }
       });
 
-      proc.on("error", (err) => {
+      proc.on("error", async (err) => {
+        await Log.updateOne({ jobId }, { status: "failed" });
+
+        pub.publish(
+          "deployment_logs",
+          JSON.stringify({
+            jobId,
+            type: "failed",
+          }),
+        );
+
         reject(err);
       });
-
     } catch (err) {
       await Log.updateOne({ jobId }, { status: "failed" });
 
-      pub.publish("deployment_logs", JSON.stringify({
-        jobId,
-        type: "failed"
-      }));
+      pub.publish(
+        "deployment_logs",
+        JSON.stringify({
+          jobId,
+          type: "failed",
+        }),
+      );
 
       reject(err);
     }
   });
 };
-
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
