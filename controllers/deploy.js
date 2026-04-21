@@ -30,7 +30,7 @@ exports.deployProject = async (req, res, next) => {
 
 exports.reDeployProject = async (req, res, next) => {
   try {
-    const { projectId, env } = req.body;
+    const { projectId } = req.body;
     const userId = req.cookies.userId;
     const jobId = nanoidAlpha();
     if (!projectId) {
@@ -42,10 +42,11 @@ exports.reDeployProject = async (req, res, next) => {
       throw new AppError("Project Not found", 401);
     }
 
+    
     const jobData = {
       projectId: projectId,
       repoUrl: project.repoUrl,
-      env: env || {},
+      env: project.env || {},
       buildPath: project.subfolder || "/",
       projectName: project.name,
       userId: userId,

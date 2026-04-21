@@ -40,7 +40,6 @@ const runBuild = (job) => {
     logger.info(`jobId: ${jobId}`);
 
     try {
-      // ✅ FIX 1: Create log document properly (CRITICAL)
       await Log.updateOne(
         { jobId },
         { status: "cloning", logs: [] },
@@ -56,7 +55,6 @@ const runBuild = (job) => {
         }),
       );
 
-      // ---- ANALYSING ----
       await Log.updateOne({ jobId }, { status: "analysing" });
 
       pub.publish(
@@ -107,7 +105,6 @@ const runBuild = (job) => {
 
       const proc = spawn("docker", dockerArgs);
 
-      // ---- BUILDING ----
       await Log.updateOne({ jobId }, { status: "building" });
 
       pub.publish(
@@ -166,7 +163,6 @@ const runBuild = (job) => {
           );
         }
 
-        // ---- FAILURE ----
         if (code !== 0) {
           await Log.updateOne({ jobId }, { status: "failed" });
 
@@ -181,7 +177,6 @@ const runBuild = (job) => {
           return reject(new AppError("Build failed"));
         }
 
-        // ---- UPLOADING ----
         await Log.updateOne({ jobId }, { status: "uploading" });
 
         pub.publish(
@@ -226,9 +221,13 @@ const runBuild = (job) => {
           deployment.completedAt = new Date();
 
           await deployment.save();
-          await Project.findByIdAndUpdate(projectId, {
-            currentVersion: version,
-          });
+          const updatedProject = await Project.findByIdAndUpdate(
+            projectId,
+            { currentVersion: version },
+            { new: true },
+          );
+
+          console.log("UPDATED PROJECT:", updatedProject);
 
           await Log.updateOne(
             { jobId },

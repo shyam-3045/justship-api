@@ -78,3 +78,64 @@ exports.getMyProjects = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.getMyEnv = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const userId = req.cookies.userId;
+
+    if (!userId) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      throw new AppError("Project not found", 404);
+    }
+
+    return res.status(200).json({
+      success: true,
+      env: project.env || {}
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateEnv = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { env } = req.body;
+    const userId = req.cookies.userId;
+
+    console.log(`Details :${projectId},${env}`)
+
+    if (!userId) {
+      throw new AppError("Unauthorized", 401);
+    }
+
+    if (!env || typeof env !== "object") {
+      throw new AppError("Invalid env format", 400);
+    }
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      throw new AppError("Project not found", 404);
+    }
+
+    project.env = env;
+    await project.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Environment updated. Please redeploy."
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
