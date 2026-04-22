@@ -66,8 +66,8 @@ const runBuild = (job) => {
         }),
       );
 
-      const dockerPath =
-        "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api/output";
+      const dockerPath = process.env.ENV == dev ?
+        "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api/output":"/home/ubuntu/justship-api/output"
 
       const envArgs = [
         "-e",
@@ -89,8 +89,8 @@ const runBuild = (job) => {
         "--rm",
         "--name",
         `deployx-builder-${job.id}`,
-        "--cpus=1",
-        "--memory=512m",
+        "--cpus=0.3",
+        "--memory=200m",
         "--pids-limit=100",
         "--memory-swap=512m",
         ...envArgs,
@@ -189,7 +189,8 @@ const runBuild = (job) => {
         );
 
         const localPath = path.join(
-          "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api",
+           process.env.ENV == dev ?
+        "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api":"/home/ubuntu/justship-api",
           "output",
           projectName,
         );
@@ -312,7 +313,7 @@ mongoose
 
     const worker = new Worker("deploy-queue", runBuild, {
       connection,
-      concurrency: 3,
+      concurrency: 1,
     });
 
     worker.on("completed", (job) => {

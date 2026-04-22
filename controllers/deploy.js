@@ -20,7 +20,7 @@ exports.deployProject = async (req, res, next) => {
     await deployProjectService(req.body, userId, jobId);
     console.log("JOB ID:", jobId);
     return res.status(200).send({
-      msg: "Job Added to Queue",
+      msg: "Deployment Triggered",
       jobID: jobId,
     });
   } catch (error) {

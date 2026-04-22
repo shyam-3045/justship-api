@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema({
   },
   accessToken:{
     type : String,
-    unique:true,
   },
   avatar : {
     type : String
