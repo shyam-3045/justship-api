@@ -4,6 +4,7 @@ const Project = require("../models/projectSchema");
 const { switchVersion } = require("../utils/switchVersion");
 const User = require("../models/userSchema");
 const logger = require("../config/logger");
+const { deleteProjectService } = require("../services/deleteProject");
 exports.setVersion = async (req, res, next) => {
   try {
     const { projetId, version } = req.body;
@@ -139,3 +140,21 @@ exports.updateEnv = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteProject=async(req,res,next)=>
+{
+  try {
+    const { projectId } = req.params
+    const userId = req.cookies.userId
+
+    await deleteProjectService(projectId, userId)
+
+    return res.status(200).json({
+      success: true,
+      message: "Project deleted"
+    })
+  } catch (error) {
+    next(error)
+    
+  }
+}

@@ -2,13 +2,13 @@ const Project = require("../models/projectSchema");
 const AppError = require("../errors/AppError");
 const logger = require("../config/logger");
 
-exports.getNextVersion= async (projectId)=>  {
+exports.getNextVersion = async (projectId) => {
   try {
-    logger.info(`projectId:${projectId}`)
+    logger.info(`projectId:${projectId}`);
     const project = await Project.findByIdAndUpdate(
       projectId,
       { $inc: { lastVersion: 1 } },
-      { new: true }
+      { returnDocument: "after" },
     );
 
     if (!project) {
@@ -16,10 +16,8 @@ exports.getNextVersion= async (projectId)=>  {
     }
 
     return project.lastVersion;
-
   } catch (error) {
     console.error("REAL ERROR:", error);
     throw new AppError("Cannot get next version");
   }
 };
-

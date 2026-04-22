@@ -16,6 +16,13 @@ fi
 
 echo "📦 Project: $PROJECT_NAME"
 
+if git ls-remote "$REPO_URL" > /dev/null 2>&1; then
+  echo "Repo is accessible "
+else
+  echo "Repo not accessible (private / invalid repository)"
+  exit 1
+fi
+
 git clone "$REPO_URL" repo
 cd repo
 

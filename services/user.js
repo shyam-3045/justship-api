@@ -14,21 +14,21 @@ exports.storeUser = async (data) => {
     });
 
     return User._id;
-    console.log(user)
+    console.log(user);
   }
   const userdet = await User.findOneAndUpdate(
-  { githubId: data.githubId },
-  {
-    username: data.username,
-    email: data.email,
-    avatar: data.avatar,
-    accessToken: data.accessToken,
-  },
-  {
-    upsert: true,
-    new: true,
-  }
-);
+    { githubId: data.githubId },
+    {
+      username: data.username,
+      email: data.email,
+      avatar: data.avatar,
+      accessToken: data.accessToken,
+    },
+    {
+      upsert: true,
+      returnDocument: "after",
+    },
+  );
 
   logger.info("User Aldready Exists in DB");
   return userdet._id;

@@ -27,12 +27,14 @@ exports.getRepos = async (req,res,next) => {
       },
     });
 
-    const repos = response.data.map((repo) => ({
-      id: repo.id,
-      name: repo.name,
-      fullName: repo.full_name,
-      private: repo.private,
-    }));
+    const repos = response.data
+      .filter(repo => !repo.private)
+      .map((repo) => ({
+        id: repo.id,
+        name: repo.name,
+        fullName: repo.full_name,
+        private: repo.private,
+      }));
 
     res.status(200).json(repos);
   } catch (err) {

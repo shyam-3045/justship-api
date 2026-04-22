@@ -17,6 +17,7 @@ const { uploadDirectory } = require("../utils/uploadDirectory");
 const Deployment = require("../models/deploymentModel");
 const Log = require("../models/logsSchema");
 const { getNextVersion } = require("../utils/getNextVersion");
+const { deleteProjectService } = require("../services/deleteProject");
 
 const connection = {
   host: "127.0.0.1",
@@ -66,8 +67,10 @@ const runBuild = (job) => {
         }),
       );
 
-      const dockerPath = process.env.ENV == dev ?
-        "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api/output":"/home/ubuntu/justship-api/output"
+      const dockerPath =
+        process.env.ENV == "dev"
+          ? "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api/output"
+          : "/home/ubuntu/justship-api/output";
 
       const envArgs = [
         "-e",
@@ -173,6 +176,11 @@ const runBuild = (job) => {
               type: "failed",
             }),
           );
+          try {
+            await deleteProjectService(projectId, userId);
+          } catch (cleanupErr) {
+            logger.error("Cleanup failed:", cleanupErr);
+          }
 
           return reject(new AppError("Build failed"));
         }
@@ -189,8 +197,9 @@ const runBuild = (job) => {
         );
 
         const localPath = path.join(
-           process.env.ENV == dev ?
-        "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api":"/home/ubuntu/justship-api",
+          process.env.ENV == "dev"
+            ? "C:/Users/shyam/OneDrive/Desktop/JustShip/justship-api"
+            : "/home/ubuntu/justship-api",
           "output",
           projectName,
         );
@@ -225,7 +234,7 @@ const runBuild = (job) => {
           const updatedProject = await Project.findByIdAndUpdate(
             projectId,
             { currentVersion: version },
-            { new: true },
+            { returnDocument: "after" },
           );
 
           console.log("UPDATED PROJECT:", updatedProject);
