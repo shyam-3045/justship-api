@@ -6,7 +6,7 @@ const { addJobToQ } = require("../utils/addJobToQ");
 exports.deployProjectService = async (data,userId,jobId) => {
   logger.info("build received!");
 
-  const { url,buildPath,env, projectName,framework } = data;
+  const { url,buildPath,env, projectName,framework,branch } = data;
   
 
   if (!url) {
@@ -16,6 +16,9 @@ exports.deployProjectService = async (data,userId,jobId) => {
   if(!userId)
   {
     throw new AppError("UserId is required", 400)
+  }
+  if (!branch) {
+    throw new AppError("Branch is required", 400);
   }
   if(!jobId)
   {
@@ -52,7 +55,8 @@ exports.deployProjectService = async (data,userId,jobId) => {
       lastVersion :1,
       framework:framework,
       url:projectUrl,
-      env:env || {}
+      env:env || {},
+      branch:branch
     
     });
   } catch (err) {
@@ -70,7 +74,8 @@ exports.deployProjectService = async (data,userId,jobId) => {
     projectName,
     userId,
     framework,
-    jobId
+    jobId,
+    branch
   };
   console.log(`jobData from service:${jobData.toString()}`)
 

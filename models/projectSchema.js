@@ -8,16 +8,20 @@ const projectSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  currentVersion: { type: Number, default: 1 },
+  currentVersion: { type: Number, default: 0 },
   lastVersion: {
     type: Number,
-    default: 1,
+    default: 0,
+  },
+  branch: {
+    type: String,
+    required: true,
   },
   repoUrl: { type: String, required: true },
   framework: String,
   subfolder: String,
   url: String,
-  env: { type: Object },  
+  env: { type: Object },
   createdAt: { type: Date, default: Date.now },
 });
 

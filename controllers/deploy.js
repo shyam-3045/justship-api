@@ -52,6 +52,7 @@ exports.reDeployProject = async (req, res, next) => {
       userId: userId,
       framework: project.framework,
       jobId: jobId,
+      branch: project.branch
     };
 
     await addJobToQ(jobData);

@@ -23,7 +23,12 @@ else
   exit 1
 fi
 
-git clone "$REPO_URL" repo
+if [ -z "$BRANCH" ]; then
+  echo "PROJECT_NAME not provided"
+  exit 1
+fi
+
+git clone -b "$BRANCH" "$REPO_URL" repo
 cd repo
 
 if [ -n "$SUBFOLDER" ]; then

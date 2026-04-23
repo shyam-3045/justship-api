@@ -36,6 +36,7 @@ const runBuild = (job) => {
       buildPath = "",
       env = {},
       jobId,
+      branch
     } = job.data;
 
     logger.info(`jobId: ${jobId}`);
@@ -79,6 +80,8 @@ const runBuild = (job) => {
         `PROJECT_NAME=${projectName}`,
         "-e",
         `SUBFOLDER=${buildPath}`,
+        "-e",
+        `BRANCH=${branch}`
       ];
 
       for (const [key, value] of Object.entries(env)) {
@@ -87,11 +90,16 @@ const runBuild = (job) => {
         }
       }
 
+       const uid = process.getuid();
+       const gid = process.getgid();
+
       const dockerArgs = [
         "run",
         "--rm",
         "--name",
         `deployx-builder-${job.id}`,
+        "--user",
+        `${uid}:${gid}`,
         "--cpus=0.3",
         "--memory=200m",
         "--pids-limit=100",
