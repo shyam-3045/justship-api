@@ -16,7 +16,10 @@ const deploymentSchema = new mongoose.Schema({
   version: { type: Number, required: true },
 
   buildId: { type: String, required: true, unique: true },
-
+  commitHash :{
+    type:String,
+    required : true
+  },
   status: {
     type: String,
     enum: [

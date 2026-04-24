@@ -7,8 +7,8 @@ const cookieParser = require("cookie-parser")
 const app = express()
 const http = require("http")
 const {Server}=require('socket.io')
-const initSocket = require("./sockets/socket")
 const initSubscriber = require("./redis/subscriber")
+const { initSocket } = require("./sockets/socket")
 
 const PORT = 8080
 dotenv.config()
@@ -49,4 +49,5 @@ server.listen(PORT,()=>
 {
     console.log(`Server is running at Port :${PORT}`)
 })
+
 

@@ -17,6 +17,15 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  autoDeploy : {
+    type : Boolean ,
+    default : true
+
+  },
+  repoFullName  :{
+    type : String,
+    required :true
+  },
   repoUrl: { type: String, required: true },
   framework: String,
   subfolder: String,

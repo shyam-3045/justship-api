@@ -3,10 +3,10 @@ const AppError = require("../errors/AppError");
 const Project = require("../models/projectSchema");
 const { addJobToQ } = require("../utils/addJobToQ");
 
-exports.deployProjectService = async (data,userId,jobId) => {
+exports.deployProjectService = async (data,userId,jobId,hash) => {
   logger.info("build received!");
 
-  const { url,buildPath,env, projectName,framework,branch } = data;
+  const { url,buildPath,env, projectName,framework,branch,repoFullName } = data;
   
 
   if (!url) {
@@ -56,8 +56,9 @@ exports.deployProjectService = async (data,userId,jobId) => {
       framework:framework,
       url:projectUrl,
       env:env || {},
-      branch:branch
-    
+      branch: branch,
+      repoFullName :repoFullName
+
     });
   } catch (err) {
     if (err.code === 11000) {
@@ -75,7 +76,8 @@ exports.deployProjectService = async (data,userId,jobId) => {
     userId,
     framework,
     jobId,
-    branch
+    branch,
+    hash
   };
   console.log(`jobData from service:${jobData.toString()}`)
 

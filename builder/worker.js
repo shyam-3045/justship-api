@@ -36,7 +36,8 @@ const runBuild = (job) => {
       buildPath = "",
       env = {},
       jobId,
-      branch
+      branch,
+      hash
     } = job.data;
 
     logger.info(`jobId: ${jobId}`);
@@ -225,6 +226,7 @@ const runBuild = (job) => {
             buildId: jobId,
             status: "building",
             env,
+            commitHash:hash
           });
 
           await uploadDirectory(

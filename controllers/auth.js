@@ -101,6 +101,7 @@ exports.getMe=async(req,res)=>
     }
 
     res.json({
+      userId:userId,
       name: user.username,
       avatarUrl: user.avatar,
     });

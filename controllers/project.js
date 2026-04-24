@@ -66,7 +66,7 @@ exports.getMyProjects = async (req, res, next) => {
     const projects = await Project.find({
       userId: userId,
     });
-    console.log("projects :", projects);
+  
 
     return res
       .status(200)
@@ -156,5 +156,35 @@ exports.deleteProject=async(req,res,next)=>
   } catch (error) {
     next(error)
     
+  }
+}
+
+exports.setAutoDeploy=async(req,res,next)=>
+{
+  try {
+    const { projectId } = req.params;
+    const { autoDeploy } = req.body; 
+    const userId = req.cookies.userId;
+
+    if (typeof autoDeploy !== "boolean") {
+      throw new AppError("autoDeploy must be boolean", 400);
+    }
+
+    const project = await Project.findOneAndUpdate(
+      { _id: projectId, userId },
+      { autoDeploy },
+      { new: true }
+    );
+
+    if (!project) {
+      throw new AppError("Project not found", 404);
+    }
+
+    return res.status(200).json({
+      success: true,
+      autoDeploy: project.autoDeploy,
+    });
+  } catch (err) {
+    next(err);
   }
 }
